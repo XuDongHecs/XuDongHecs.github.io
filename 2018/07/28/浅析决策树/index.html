@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="决策树,CART,ID3,C4.5," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言：  决策树归纳是从有类标号的训练元组中学习决策模型。常用的决策树算法有ID3，C4.5和CART。它们是采用贪心（即非回溯的）方法，自顶向下递归的分治方法构造。这几个算法选择属性划分的方法各不相同，ID3使用的是信息增益，C4.5使用的是信息增益率，而CART使用的是Gini基尼指数。下面来简单介绍下决策树的理论知识。内容包含决策树的算法构成，熵、信息增益、信息增益率以及Gini指数和树的">
+<meta name="keywords" content="决策树,CART,ID3,C4.5">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅析决策树">
+<meta property="og:url" content="http://yoursite.com/2018/07/28/浅析决策树/index.html">
+<meta property="og:site_name" content="何先生的Blog">
+<meta property="og:description" content="前言：  决策树归纳是从有类标号的训练元组中学习决策模型。常用的决策树算法有ID3，C4.5和CART。它们是采用贪心（即非回溯的）方法，自顶向下递归的分治方法构造。这几个算法选择属性划分的方法各不相同，ID3使用的是信息增益，C4.5使用的是信息增益率，而CART使用的是Gini基尼指数。下面来简单介绍下决策树的理论知识。内容包含决策树的算法构成，熵、信息增益、信息增益率以及Gini指数和树的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/决策树示意图.jpg">
+<meta property="og:image" content="http://yoursite.com/images/ID3.jpg">
+<meta property="og:image" content="http://yoursite.com/images/CART剪枝算法流程.png">
+<meta property="og:updated_time" content="2018-08-07T18:47:10.668Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浅析决策树">
+<meta name="twitter:description" content="前言：  决策树归纳是从有类标号的训练元组中学习决策模型。常用的决策树算法有ID3，C4.5和CART。它们是采用贪心（即非回溯的）方法，自顶向下递归的分治方法构造。这几个算法选择属性划分的方法各不相同，ID3使用的是信息增益，C4.5使用的是信息增益率，而CART使用的是Gini基尼指数。下面来简单介绍下决策树的理论知识。内容包含决策树的算法构成，熵、信息增益、信息增益率以及Gini指数和树的">
+<meta name="twitter:image" content="http://yoursite.com/images/决策树示意图.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/07/28/浅析决策树/"/>
+
+
+
+
+
+  <title>浅析决策树 | 何先生的Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">何先生的Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">该搬的砖一块都少不了，Come on!</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            站点地图
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-baidusitemap">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            baidusitemap
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/28/浅析决策树/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="会旋转的霸东">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="何先生的Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">浅析决策树</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-28T23:24:25+08:00">
+                2018-07-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/机器学习算法/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习算法</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/机器学习算法/树模型/" itemprop="url" rel="index">
+                    <span itemprop="name">树模型</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/07/28/浅析决策树/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/07/28/浅析决策树/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言">前言：</h3>
+<p> 决策树归纳是从有类标号的训练元组中学习决策模型。常用的决策树算法有ID3，C4.5和CART。它们是采用贪心（即非回溯的）方法，自顶向下递归的分治方法构造。这几个算法选择属性划分的方法各不相同，ID3使用的是信息增益，C4.5使用的是信息增益率，而CART使用的是Gini基尼指数。下面来简单介绍下决策树的理论知识。内容包含<strong>决策树的算法构成</strong>，<strong>熵</strong>、<strong>信息增益</strong>、<strong>信息增益率</strong>以及<strong>Gini指数</strong>和<strong>树的剪枝</strong>的概念及公式。</p>
+<a id="more"></a>
+<h4 id="快速系统的理解一个机器学习算法">快速系统的理解一个机器学习算法</h4>
+<ol type="1">
+<li>算法要解决的问题什么?</li>
+<li>算法的输入输出是什么?</li>
+<li>算法的实现的机理是什么?</li>
+<li>算法的优化方法是什么？</li>
+<li>算法的评价指标是什么？</li>
+</ol>
+<h3 id="决策树的算法构成">决策树的算法构成</h3>
+<p> 决策树归纳是从有类标号的训练元组中学习决策模型。常用的决策树算法有ID3，C4.5和CART。它们都是采用贪心（即非回溯的）方法，自顶向下递归的分治方法构造。这几个算法选择属性划分的方法各不相同，ID3使用的是信息增益，C4.5使用的是信息增益率，而CART使用的是Gini基尼指数。下面来简单介绍下决策树的理论知识。内容包含<strong>决策树的算法构成</strong>，<strong>熵</strong>、<strong>信息增益</strong>、<strong>信息增益率</strong>以及<strong>Gini指数</strong>和<strong>树的剪枝</strong>的概念及公式。</p>
+<p>​ 决策树是是由特征空间作为结点和类空间作为叶子构建的一棵树。：</p>
+<h4 id="特征划分逻辑">特征划分逻辑</h4>
+<p>  以每个特征作为判别标志（根节点），用if…then…作为分裂规则(yes or no)，将特征空间划分成互斥且完备的子空间，通过不断地划分子空间，树不断地生长。具体的划分依据和逻辑见第三章。 <img src="/images/决策树示意图.jpg" alt="决策树示意图"></p>
+<h4 id="分类规则">分类规则：</h4>
+<p> 从统计的角度出发，节点对应的最大条件概率作为分类准则。(要明白似然函数和概率的区别)</p>
+<h4 id="优化">优化：</h4>
+<p>  决策树的损失函数通常是正则化的极大似然函数，学习的策略是以损失函数为目标函数的最小化。决策树采用<strong>启发式算法</strong>来近似求解最优化问题，得到的是次最优的结果。</p>
+<p>​ 该启发式算法可分为三步：</p>
+<ul>
+<li>特征选择</li>
+<li>模型生成</li>
+<li>决策树的剪枝</li>
+</ul>
+<h3 id="决策树生成与剪枝">决策树生成与剪枝</h3>
+<h4 id="信息量与熵">信息量与熵</h4>
+<p> 不管是分类任务还是回归任务，都是在做这样一件事情<strong>传递消息（类别or回归值）</strong>；特征就是我们对需要传递的消息的一种编码方式即信息。那么怎么衡量信息?信息论定义如下： <span class="math display">\[
+信息量：l(x_i)=-log_2p(x_i)
+\]</span> ​ 有了信息（特征）以后怎么确定这个信息是否可靠的表达消息？我们定义熵来度量信息是否可靠。 <span class="math display">\[
+熵：H(x) = -\sum_{i=1}^np_ilog(p_i)\
+\]</span></p>
+<p><span class="math display">\[
+条件熵： H(Y|X) = H(X,Y)-H(X) = \sum_XP(X)H(Y|X) = -\sum_{X,Y}logP(Y|X)
+\]</span></p>
+<p> <strong>熵越大，说明系统越混乱，携带的信息就越少。熵越小，说明系统越有序，携带的信息就越多</strong>。信息的作用就是在于消除不确定性。 均匀分布的不确定性最大，即特征均匀分布（所有特征都一样）熵最大，特征完全没有区分性，无法准确传递消息（类别or回归）。条件熵<code>H（Y|X）</code>描述的是在X给定的条件下Y的不确定性，如果条件熵越小，表示不确定性就越小，那么B就越容易确定结果。</p>
+<h4 id="id3算法与信息增益">ID3算法与信息增益</h4>
+<p> ID3划分特征（创建节点的规则）使用的就是信息增益<code>Info-Gain</code>排序。<strong>一个特征的信息增益越大，表明该对样本的熵减少的能力就更强，该特征使得数据所属类别的不确定性降低</strong>。信息增益描述特征对分类(回归)的不确定性的降低程度，可以用来度量两个变量的相关性。比如，在给定一个变量的条件下，另一个变量它的不确定性能够降低多少，如果不确定性降低得越多，那么它的确定性就越大，就越容易区分，两者就越相关。</p>
+<ol type="1">
+<li><p><code>信息增益</code></p>
+ 信息增益在统计学中称为互信息，互信息是条件概率与后验概率的比值，化简之后就可以得到信息增益。所以说互信息其实就是信息增益。计算方法: <span class="math display">\[
+G(D, A) = H(D) - H(D|A) ，H(D)经验熵，H(D|A)经验条件熵，D表示训练集，A表示特征空间
+\]</span> <span class="math display">\[
+H(D)=-\sum_{k=1}^K\frac{|C_k|}{|D|}log\frac{|C_k|}{|D|}，其中，|C_k|是属于类C_k的个数，|D|是所有样本的个数
+\]</span> <span class="math display">\[
+H(D|A)=\sum_{i=1}^np_{a_i}H(D|a_i)=\sum_{i=1}^n\frac{|D_i|}{|D|}H(D_i)=-\sum_{i=1}^n\frac{|D_i|}{|D|}\sum_{k=1}^{K}\frac{|D_{ik}|}{|D_i|}log\frac{|D_{ik}|}{|D_i|}，\\特征A有个不同的划分取值\{a_1, a_2, ..., a_n\}，根据特征A的划分取值将D划分为n个子集D_1, D_2, ..., D_n， |D_i|是D_i的样\\本个数，D_ik是中属于C_k类的样本集合。
+\]</span></li>
+<li><p><code>ID3算法流程图</code> 对非空非单一特征空间<code>A</code>: <img src="/images/ID3.jpg" alt="id3算法流程"></p></li>
+</ol>
+<h4 id="c4.5算法与信息增益比">C4.5算法与信息增益比</h4>
+<p> C4.5算法用<code>信息增益比</code>作为特征选择的依据。算法流程与ID3类似。 使用信息增益作为特征选择的标准时，容易偏向于那些取值比较多的特征，容易导致过拟合。而采用信息增益比则有效地抑制了这个缺点：取值多的特征，以它作为根节点的单节点树的熵很大，导致信息增益比减小，在特征选择上会更加合理。 <span class="math display">\[
+信息增益比: g_R(D,A)=\frac{g(D,A)}{H_A(D)}, 其中   H_A(D) = -\sum_{i=1}^n\frac{D_i}{D}log_2\frac{D_i}{D}，n为特征A取值的个数
+\]</span>  我的理解就是信息增益比在信息增益上做了个平滑处理，将特征对应的信息增益与特征空间划分的熵相结合起来，约束了不同取值特征的信息增益处理不均衡的问题，在一定程度生类似于标准化，正向统一特征划分的标准。</p>
+<h4 id="cart算法">CART算法</h4>
+<p> CART(分类回归树)算法是由以特征为节点的多个二叉树串联形成可以完成回归任务和分类任务。CART算法同样由特征选择，树的生成及剪枝组成 ；其中回归树用最小平方误差准则，分类树用基尼指数(Gini index)最小化 准则，进行特征选择，生成二叉树。</p>
+<h5 id="最小二乘回归树生成算法">1. 最小二乘回归树生成算法</h5>
+<p> 带着问题看算法： 要搞明白最小二乘法是怎么进行特征选择的？  采用启发式的方法，选择第j个特征和它的取值s作为切分变量和切分点，然后以该特征及切分情况(对应分割区域的输出与真实输出的平方误差和)遍历j的所有取值找到最优的切分点s。具体的优化公式如下： <span class="math display">\[
+\underset{j,s}{min}[\underset{c_1}{min}\sum_{x_i\in R_1(j,s)}(y_i-c_1)^2+\underset{c_2}{min}\sum_{x_i\in R_2(j,s)}(y_i-c_2)^2]\\其中，R_1(j,s)=\{x|x^{(j)}≤s\},R_2(j,s)=\{x|x^{(j)}＞s\}，c_1={1\over N_1}\sum_{x_i \in R_1}y_i , \quad c_2={1\over N_2}\sum_{x_i \in R_2}y_i
+\]</span>  统计学习方法上说 对上述俩个子空间递归调用该步骤,直到满足停止条件。 然后将输入空间划分为M个子区域，生成决策树： <span class="math display">\[
+f(x) = \sum_{m=1}^Mc_mI(x \in R_m)
+\]</span></p>
+<h5 id="cart分类算法与基尼系数">2. CART分类算法与基尼系数</h5>
+<ol type="1">
+<li>基尼指数</li>
+</ol>
+<p><span class="math display">\[
+基尼指数 ：Gini(D) =1-\sum_{k=1}^{K}(\frac{|C_k|}{|D|})^2，其中C_k是D中属于第k类的子集。\\如果样本集合D根据特征A是否取某一可能值a被分割成D1和D2两部分，即\\ D_1=\{(x,y) \in D| A(x) =a\},D_2 = D-D_1\\则在特征A的条件下，集合D的基尼指数定义为 :Gini(D,A) = \frac{\vert D_1\vert}{\vert D\vert}Gini(D_1)+\frac{\vert D_2\vert}{\vert D\vert}Gini(D_2)
+\]</span> <strong>问题： 那为什么用基尼指数选择特征而不用信息增益或者信息增益率？</strong>​</p>
+<ol start="2" type="1">
+<li>分类CART生成：</li>
+</ol>
+<hr>
+<p> 输入：训练数据集D，停止计算的条件；</p>
+<p> 输出：CART决策树；</p>
+<p> 根据训练数据集，从根节点开始，递归地对每个结点进行以下操作，构建二叉决策树：</p>
+<p> （1）设结点的训练数据集为D，计算现有特征对该数据集的基尼指数。此时对每一个特征A，对其可能取的每个值a，根据样本点对A=a的测试为“是”或“否”将D分割成D1和D2两部分，利用基尼指数计算公式计算。</p>
+<p> （2）在所有可能的特征A以及它们所有可能的切分点a中，选择基尼指数最小的特征及其对应的切分点作为最优特征与最优切分点。依最优特征与最优切分点，从现结点生成两个子结点，将训练数据集依特征分配到两个子结点中去。</p>
+<p> （3）对两个子结点递归地调用（1），（2），直至满足停止条件。</p>
+<p> （4）生成CART决策树</p>
+<p> 算法停止计算的条件是结点中的样本个数小于预定阈值，或样本集的基尼指数小于预定阈值，或者没有更多特征。</p>
+<hr>
+<h4 id="决策树的剪枝">决策树的剪枝</h4>
+<p> 因为决策树的生成算法容易构建过于复杂的决策树，产生过拟合。而剪枝从已生成的树上裁掉一些子树或叶结点，并将其根结点或父结点作为新的叶结点，从而简化分类树模型，在这里我们可以联想其实剪枝就是一直正则化手段，简化模型，防止过拟合！下面我们进行详细介绍：</p>
+<p> 决策树剪枝的基本策略： - 预剪枝(prepruning) 在决策树生成过程中，对每个节点在分割前先进行估计。若当前的分割不能带来决策树泛化性能的提升，则停止分割并将当前节点标记为叶节点 在预剪枝过程中，决策树的很多分支都没有展开，这不仅降低了过拟合的风险，还显著减少了决策树的训练时间和预测时间；但有些分支的当前分割虽不能提升泛化性能、甚至能导致泛化性能下降，但在其基础上的后续分割却有可能导致泛化性能的显著提高，容易导致欠拟合 - 后剪枝(postpurning) 先从训练样本集生成一棵最大规模的完整的决策树，然后自底向上地对非叶结点进行考察。若将该提升决策树的泛化性能，则将该子树替换为叶节点节点对应的子树替换为叶节点能 后剪枝决策树比预剪枝决策树保留了更多的分支。后剪枝过程的欠拟合风险很小，泛化性能往往优于预剪枝决策树，但后剪枝过程是在生成完全决策树之后进行的，并且要自底向上地对树中所有的非叶节点进行逐一考察，因此训练时间开销比未剪枝决策树和预剪枝决策树都要大的多</p>
+<ol type="1">
+<li><p><strong>决策树的剪枝</strong></p>
+<p> 决策树的剪枝往往通过极小化决策树整体的损失函数或代价函数来实现。 设树T的叶结点个数为<span class="math inline">\(|T|\)</span>，t是树T的叶结点，该叶结点有<span class="math inline">\(N_t\)</span>个样本结点，其中k类的样本点有<span class="math inline">\(N_{tk}\)</span>，k = 1, 2, …, K，<span class="math inline">\(H_t(T)\)</span>为叶结点t上的经验熵，α≥0为参数，则决策树学习的损失函数可以定义为 :<span class="math inline">\(C_{\alpha}(T_t) = C(T_t) + \alpha|T_t|\)</span> 其中经验熵:<span class="math inline">\(H_t(T)=-\sum_{i}^{K}\frac{|N_{ik}|}{N_i}log\frac{|N_{ik}|}{N_i}\)</span> 在损失函数中，将第1项记作:<span class="math inline">\(C(T)=\sum_{t=1}^{|T|}N_tH_t(T)=\sum_{t=1}^{|T|}\sum_{k=1}^{K}N_{tk}log\frac{N_{tk}}{N_t}\)</span> 则：<span class="math inline">\(C_\alpha(T)=C(T)+\alpha|T|\)</span></p>
+<p> C(T)表示模型对训练数据的预测误差，即模型与训练数据的拟合程度，<span class="math inline">\(|T|\)</span>表示模型的复杂度，参数<span class="math inline">\(\alpha\)</span>控制两者之间的影响。较大的<span class="math inline">\(\alpha\)</span>促使选择较简单的模型（树），较小的<span class="math inline">\(\alpha\)</span>促使选择较复杂的模型（树）。<span class="math inline">\(\alpha=0\)</span>意味着只考虑模型与训练数据的拟合程度，不考虑模型的复杂度。 剪枝，就是当α确定时，选择损失函数最小的模型（树）。但α值确定时，子树越大，往往与训练数据的拟合越好，但是模型的复杂度就越高；相反，子树越小，模型的复杂度就越低，但是往往与训练数据的拟合不好。损失函数正好表示了对两者的平衡。 可以看出，决策树生成只考虑了通过提高信息增益（或信息增益比）对训练数据进行更好的拟合。而决策树剪枝通过优化损失函数还考虑了减小模型复杂度。<strong>决策树生成学习局部的模型，而决策树剪枝学习整体的模型</strong>。 <strong>损失函数的极小化等价于正则化的极大似然估计</strong>。所以，利用损失函数最小原则进行剪枝就是用正则化的极大似然估计进行模型选择。</p>
+<hr>
+<p>决策树剪枝算法：</p>
+<p>输入：生成算法产生的整个树T，参数<span class="math inline">\(\alpha\)</span>;</p>
+<p>输出：修剪后的子树<span class="math inline">\(T_\alpha\)</span></p>
+<p>（1）计算每个结点的经验熵；</p>
+<p>（2）递归地从树的叶结点向上回缩。设一组叶结点回缩到其父结点之前与之后的整体树分别为<span class="math inline">\(T_B\)</span>和<span class="math inline">\(T_A\)</span>，其对应的损失函数值分别是<span class="math inline">\(C_\alpha(B)\)</span>和<span class="math inline">\(C_\alpha(A)\)</span>，如果<span class="math inline">\(C_\alpha(B)\le C_\alpha(A)\)</span> 则进行剪枝，即父结点变为新的叶结点。</p>
+<p>（3）返回（2），直至不能继续为止，得到损失函数最小的子树<span class="math inline">\(T_\alpha\)</span>。</p>
+<hr></li>
+<li><p><strong>CART剪枝</strong></p>
+<p> 相比一般剪枝算法，CART剪枝算法的优势在于，<strong>不用提前确定α值</strong>，而是在剪枝后从所有子树中找到最优子树对应的<span class="math inline">\(\alpha\)</span>值。 对于固定的α值，一定存在让<span class="math inline">\(C_\alpha(T)\)</span>最小的唯一的子树，记<span class="math inline">\(T_\alpha\)</span>。 <img src="/images/CART剪枝算法流程.png" alt="CART剪枝算法流程"></p></li>
+</ol>
+<h3 id="决策树小结">决策树小结</h3>
+<h4 id="决策树算法对比">决策树算法对比</h4>
+<table>
+<thead>
+<tr class="header">
+<th>算法</th>
+<th>支持模型</th>
+<th>树结构</th>
+<th>特征选择</th>
+<th>连续值处理</th>
+<th>缺失值处理</th>
+<th>剪枝</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ID3</td>
+<td>分类</td>
+<td>多叉树</td>
+<td>信息增益</td>
+<td>不支持</td>
+<td>不支持</td>
+<td>不支持</td>
+</tr>
+<tr class="even">
+<td>C4.5</td>
+<td>分类</td>
+<td>多叉树</td>
+<td>信息增益比</td>
+<td>支持</td>
+<td>支持</td>
+<td>支持</td>
+</tr>
+<tr class="odd">
+<td>CART</td>
+<td>分类，回归</td>
+<td>二叉树</td>
+<td>基尼系数，均方差</td>
+<td>支持</td>
+<td>支持</td>
+<td>支持</td>
+</tr>
+</tbody>
+</table>
+<h4 id="决策树算法的优缺点">决策树算法的优缺点</h4>
+<ul>
+<li>优点：</li>
+</ul>
+<ol type="1">
+<li>决策树由明确的规则生成，可解释性强。</li>
+<li>基本不需要预处理，不需要提前归一化，处理缺失值。</li>
+<li>既可以处理离散值也可以处理连续值。</li>
+<li>非参数模型，树模型在不同分布数据上表现更稳定。</li>
+<li>可以交叉验证的剪枝来选择模型，从而提高泛化能力。(验证集(CART)也可以发挥调整模型的作用而不仅仅是评估模型)</li>
+</ol>
+<ul>
+<li>缺点：</li>
+</ul>
+<ol type="1">
+<li>决策树算法非常容易过拟合，导致泛化能力不强。</li>
+<li>如果某些特征的样本比例过大，生成决策树容易偏向于这些特征。</li>
+</ol>
+<h3 id="参考">参考：</h3>
+<ol type="1">
+<li>李航. 统计学习方法</li>
+<li><a href="http://www.csuldw.com/2015/05/08/2015-05-08-decision%20tree/" target="_blank" rel="noopener">http://www.csuldw.com/2015/05/08/2015-05-08-decision%20tree/</a></li>
+<li><a href="https://applenob.github.io/decision_tree.html" class="uri" target="_blank" rel="noopener">https://applenob.github.io/decision_tree.html</a></li>
+<li><a href="https://zealscott.com/posts/54670/" class="uri" target="_blank" rel="noopener">https://zealscott.com/posts/54670/</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/决策树/" rel="tag"># 决策树</a>
+          
+            <a href="/tags/CART/" rel="tag"># CART</a>
+          
+            <a href="/tags/ID3/" rel="tag"># ID3</a>
+          
+            <a href="/tags/C4-5/" rel="tag"># C4.5</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/27/python常用的内置函数/" rel="next" title="python常用的内置函数">
+                <i class="fa fa-chevron-left"></i> python常用的内置函数
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/02/深入boosting经典算法/" rel="prev" title="深入boosting经典算法">
+                深入boosting经典算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">会旋转的霸东</p>
+              <p class="site-description motion-element" itemprop="description">写个博客，做做总结</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/XuDongHecs" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#快速系统的理解一个机器学习算法"><span class="nav-number">1.1.</span> <span class="nav-text">快速系统的理解一个机器学习算法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#决策树的算法构成"><span class="nav-number">2.</span> <span class="nav-text">决策树的算法构成</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#特征划分逻辑"><span class="nav-number">2.1.</span> <span class="nav-text">特征划分逻辑</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分类规则"><span class="nav-number">2.2.</span> <span class="nav-text">分类规则：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#优化"><span class="nav-number">2.3.</span> <span class="nav-text">优化：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#决策树生成与剪枝"><span class="nav-number">3.</span> <span class="nav-text">决策树生成与剪枝</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#信息量与熵"><span class="nav-number">3.1.</span> <span class="nav-text">信息量与熵</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#id3算法与信息增益"><span class="nav-number">3.2.</span> <span class="nav-text">ID3算法与信息增益</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#c4.5算法与信息增益比"><span class="nav-number">3.3.</span> <span class="nav-text">C4.5算法与信息增益比</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cart算法"><span class="nav-number">3.4.</span> <span class="nav-text">CART算法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#最小二乘回归树生成算法"><span class="nav-number">3.4.1.</span> <span class="nav-text">1. 最小二乘回归树生成算法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#cart分类算法与基尼系数"><span class="nav-number">3.4.2.</span> <span class="nav-text">2. CART分类算法与基尼系数</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#决策树的剪枝"><span class="nav-number">3.5.</span> <span class="nav-text">决策树的剪枝</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#决策树小结"><span class="nav-number">4.</span> <span class="nav-text">决策树小结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#决策树算法对比"><span class="nav-number">4.1.</span> <span class="nav-text">决策树算法对比</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#决策树算法的优缺点"><span class="nav-number">4.2.</span> <span class="nav-text">决策树算法的优缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">会旋转的霸东</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://yoursite.com/2018/07/28/浅析决策树/';
+          this.page.identifier = '2018/07/28/浅析决策树/';
+          this.page.title = '浅析决策树';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="custom_mathjax_source">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>

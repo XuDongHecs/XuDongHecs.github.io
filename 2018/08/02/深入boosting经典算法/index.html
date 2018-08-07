@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="GDBT,Adaboost," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文旨在梳理 Boosting方法相关的概念及理论推导。 在介绍Boosting方法之前，我们应该对机器学习模型的误差分析有所了解。从经典的Boosting算法—标准Adaboost的原理入手建立Boosting算法的基本理解，再来分析GBDT的原理(下文的GBDT特指(Greedy Function Approximation：A Gradient  Boosting Machine )提出的">
+<meta name="keywords" content="GDBT,Adaboost">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入boosting经典算法">
+<meta property="og:url" content="http://yoursite.com/2018/08/02/深入boosting经典算法/index.html">
+<meta property="og:site_name" content="何先生的Blog">
+<meta property="og:description" content="本文旨在梳理 Boosting方法相关的概念及理论推导。 在介绍Boosting方法之前，我们应该对机器学习模型的误差分析有所了解。从经典的Boosting算法—标准Adaboost的原理入手建立Boosting算法的基本理解，再来分析GBDT的原理(下文的GBDT特指(Greedy Function Approximation：A Gradient  Boosting Machine )提出的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/GDBT损失函数.png">
+<meta property="og:updated_time" content="2018-08-03T16:10:09.182Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入boosting经典算法">
+<meta name="twitter:description" content="本文旨在梳理 Boosting方法相关的概念及理论推导。 在介绍Boosting方法之前，我们应该对机器学习模型的误差分析有所了解。从经典的Boosting算法—标准Adaboost的原理入手建立Boosting算法的基本理解，再来分析GBDT的原理(下文的GBDT特指(Greedy Function Approximation：A Gradient  Boosting Machine )提出的">
+<meta name="twitter:image" content="http://yoursite.com/images/GDBT损失函数.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/08/02/深入boosting经典算法/"/>
+
+
+
+
+
+  <title>深入boosting经典算法 | 何先生的Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">何先生的Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">该搬的砖一块都少不了，Come on!</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            站点地图
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-baidusitemap">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            baidusitemap
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/02/深入boosting经典算法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="会旋转的霸东">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="何先生的Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深入boosting经典算法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-02T01:24:25+08:00">
+                2018-08-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/机器学习算法/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习算法</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/机器学习算法/集成方法/" itemprop="url" rel="index">
+                    <span itemprop="name">集成方法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/08/02/深入boosting经典算法/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/08/02/深入boosting经典算法/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p> 本文旨在梳理 Boosting方法相关的概念及理论推导。 在介绍Boosting方法之前，我们应该对机器学习模型的误差分析有所了解。从经典的Boosting算法—标准Adaboost的原理入手建立Boosting算法的基本理解，再来分析GBDT的原理(下文的GBDT特指(Greedy Function Approximation：A Gradient  Boosting Machine )提出的算法)及其变体XGBoost和Lightgbm后续文章再讲。</p>
+<a id="more"></a>
+<h2 id="机器学习中的误差偏差与方差">机器学习中的误差，偏差与方差</h2>
+<p>  误差反映的是整个模型的<strong>准确度</strong>，偏差反映的是一个模型在样本上的输出与真实值之间的误差，即模型本身的<strong>精准度</strong>，方差反映的是模型每一次输出结果与模型输出期望之间的误差，即模型的<strong>稳定性/泛化能力</strong>。 偏差和方差的概念粗略的表示为<code>训练误差</code>和<code>|训练误差-测试误差|</code>。偏差过大表现为过拟合，方差过大表现为过拟合。</p>
+<p>  集成方法是将几种机器学习技术组合成一个预测模型的元算法，以达到减小方差(过拟合)（bagging）、偏差（boosting）或改进预测（stacking）的效果。</p>
+<h2 id="boosting算法">Boosting算法</h2>
+<p>  boosting算法是通过多个弱学习器串联提升成为强分类器，通常为加法模型和前向分布算法，核心为下级弱学习器修正上级学习器的偏差。</p>
+<p>  问题：为什么多个弱分类器串联在一起可以提升模型的能力减小偏差而不出现过大方差？ boosting算法要求的基分类器不是没有条件的！首先，基分类器需要一定的的<code>可靠性</code>，其次基分类器需要具有<code>多样性</code>。然而很多情况下<code>可靠性</code>和<code>多样性</code>难以兼得。</p>
+<h3 id="adaboost">Adaboost</h3>
+<p> AdaBoost是<em>Adaptive Boosting</em>缩写，是由Yoav Freund和Robert Schapire提出的机器学习元算法。AdaBoost在某种意义上是适应性的，即随后的弱学习器会基于先前分类器分类错误的样本增加权重。AdaBoost对噪声数据和异常值敏感。在某些问题中，它可能比其他学习算法更不容易受到过拟合问题的影响。基学习器可能很弱，但只要每个学习者的表现好于随机猜测，最终的模型可以融合成表现优异的强分类器。</p>
+<p> Adaboost算法有多种推导方法[1]，比较容易理解的就是基于<code>加性模型(additive model)</code>,即基学习器的线性组合来最小化指数损失函数。 <span class="math display">\[
+l_{exp}(H|D)=E_{x-D}[e^{-f(x)H(x)}]···········(1)
+\]</span></p>
+<p><span class="math display">\[
+H(x) = \sum_{t=1}^{T}\alpha_th_t(x)···········(2) \\ 其中,T表示弱学习器个数，\alpha_t表示第t个学习器的权重，h_t(x)表示第t个学习器的输出
+\]</span>  Adaboost的核心思想：1. 给错误分类的样本增加权重，让随后的分类器可以有偏的输出；2. 给各个基学习器加上权重。那么怎么给，有什么依据？</p>
+<hr>
+<blockquote>
+<h5 id="adaboost算法描述">Adaboost算法描述：</h5>
+<p> 输入：训练集<span class="math inline">\(D={(x_1,y_1),(x_2,y_2),···,(x_m,y_m)}\)</span>,其中<span class="math inline">\(y_i\in [-1,1]\)</span></p>
+<p> 基学习器f；</p>
+<p> 迭代次数T；</p>
+<p> (1) 初始化样本权重<span class="math inline">\(W_1(x)=\frac{1}{m}\)</span></p>
+<p> (2)迭代T次(for)，算出每个模型的误差<span class="math inline">\(e_t = \sum_{i=1}^{M}I(y_i\ne h_t(x_i))\)</span></p>
+<p> (3)if <span class="math inline">\(\epsilon &gt;0.5\)</span>then break</p>
+<p> (4)更新<span class="math inline">\(\alpha_t=\frac{1}{2}ln(\frac{1-e_t}{e_t})\)</span></p>
+<p> (5)更新样本新权重<span class="math inline">\(W_t(x)=\frac{W_{t-1}exp(-\alpha_{t-1}h_{t-1}y_i)}{Z_{t-1}},其中Z_{t-1}=\sum_{}^{}W_{t-1}\)</span></p>
+<p> 输出：<span class="math inline">\(H(x)=sign(\sum_{t=1}^{T}\alpha_th_t(x))\)</span></p>
+<hr>
+</blockquote>
+<p>问题：显然按照这个算法流程，标准的adaboost实现的是二分类，那么多分类，回归任务需要改进。这仅仅是adaboost的一个应用。</p>
+<p>adaboost理论推导的俩个核心：在界定了错误率<span class="math inline">\(\epsilon_t\)</span>的情况下,求解或者估计<span class="math inline">\(\alpha_t\)</span>和新的分布<span class="math inline">\(W_t\)</span>使指数损失函数最小。</p>
+<ol type="1">
+<li><span class="math inline">\(\alpha_t\)</span>的求解</li>
+</ol>
+<p><span class="math display">\[
+l_{exp}(H|W)=E_{x-W}[e^{-f(x)H(x)}]=p_{x-W}(f(x)=h_t(x))e^{-\alpha_t}+p_{x-W}(f(x)\ne h_t(x))e^{\alpha_t}=e^{-\alpha_t}(1-\epsilon_t)+e^{\alpha_t}\epsilon_t
+\]</span></p>
+<p><span class="math display">\[
+\frac{\nabla \ell_{exp}(H|W)}{\nabla\alpha_t}=-e^{-\alpha_t}(1-\epsilon_t)+e^\alpha_t\epsilon_t
+\]</span></p>
+<p>令<span class="math inline">\(\frac{\nabla l_{exp}(H|D)}{\nabla\alpha_t}=0\)</span>可解得： <span class="math display">\[
+\alpha_t=\frac{1}{2}ln\frac{1-\epsilon_t}{\epsilon_t}
+\]</span></p>
+<ol start="2" type="1">
+<li><span class="math inline">\(W_t\)</span>的求解</li>
+</ol>
+<p> Adaboost的算法核心是在上一个学习器的基础上，对错误分类的样本权重进行向上调整，使其在后面的学习中更被关注。这个地方我们就要说到模型的多样性的重要了。某个样本在一些弱分类器上的表现不好，就在其他分类器上还可能获得增强，然后加性融合时其可获得较低的偏差。然是如果他在所有弱分类器上的表现都不好，那么加性模型也难以修正其偏差，多样性是boost算法一个需要的重要的属性。</p>
+<p> 在基分类器<span class="math inline">\(h_t(x)\)</span>时的模型损失函数表达为： <span class="math display">\[
+\ell_{exp}(H_{t-1}+h_t(x)|W_t)=E_{x-W}[e^{-f(x)(H_{t-1}(x)+h_t(x))}]=E_{x-W}[e^{-f(x)H_{t-1}(x)}e^{-f(x)h_t(x))}]
+\]</span> 对二分类，将<span class="math inline">\(e^{-f(x)h_t(x)}\)</span>的二阶泰勒展开带入损失函数近似可得： <span class="math display">\[
+\ell_{exp}(H_{t-1}+h_t{x}|W)=E_{x-W}[e^{-f(x)H_{t-1}(x)}(\frac{3}{2}-f(x)h_t(x))]
+\]</span> 最理想情况在当前模型(<span class="math inline">\(H_{t}(x)\)</span>)的损失函数最小(即<span class="math inline">\(h_t(x)\)</span>纠正了<span class="math inline">\(H_{t-1}(x)\)</span>)的条件下求解<span class="math inline">\(W_t\)</span>。</p>
+<p>即： <span class="math display">\[
+h_t(x)=\arg\min_{h}\ell_{exp}(H_{t-1}(x)+h_t(x)|W) = \arg\min_{h}E_{x-W}[e^{-f(x)H_{t-1}(x)}(\frac{3}{2}-f(x)h_t(x))]\\= \arg\max_{h}E_{x-W}[e^{-f(x)H_{t-1}(x)}f(x)h_t(x)]
+\]</span> <span class="math inline">\(f(x)和H_{t-1}(x)\)</span>已知。令： <span class="math display">\[
+W_t=\frac{W(x)e^{-f(x)H_{t-1}(x)}}{E_{x-W}[e^{-f(x)H_{t-1}(x)}]}
+\]</span> <span class="math display">\[
+理想的基分类器：h_t(x)=\arg\max_{h}E_{x-W}[W_tf(x)h_t(x)]=\arg\min_{h}E_{x-W_t}[I(f(x) \ne h_t(x))]
+\]</span></p>
+<p><span class="math inline">\(h_t(x)\)</span>在分布<span class="math inline">\(W_t\)</span>下仍然可以达到最小分类误差。</p>
+<h3 id="gdbt">GDBT</h3>
+<p><strong><em>吐槽：GDBT真的是太难理解了！如果只从概念上知道GDBT用不断的加基模型减小残差，那可能并没有完全理解GDBT</em></strong>。<strong><em>GDBT模型怎么加的？怎么分类的？输入是多维的构建树的过程是什么样的</em></strong>？</p>
+<p>GDBT的基分类器是CART回归树，GDBT是通过不断地最小化残差来实现加法模型，其中梯度提升的本质是每一次建立模型是在之前建立模型损失函数的梯度下降方向 。梯度提升树在结构化数据上的具有优越性，如推荐系统和计算广告里面。</p>
+<p> GDBT在处理回归问题时的残差其实就在最小平方损失函数的负梯度方向，即： <span class="math display">\[
+r_{mi}=-\frac{\partial[\frac{1}{2}(y_i-f_m(x_i))^2]}{\partial f_m(x_i)}=y_i-f_m(x_i)
+\]</span>  常见的损失函数即负梯度方向：</p>
+<figure>
+<img src="/images/GDBT损失函数.png" alt="GDBT常见损失函数"><figcaption>GDBT常见损失函数</figcaption>
+</figure>
+<p> 上面的叙述说明，残差是负梯度方向的一个例子，GDBT将梯度下降法的优化概理念从参数空间的优化扩展到函数空间的优化。熟悉神经网络的同学应该知道，标准的神经网络是在一个模型上迭代的更新参数<span class="math inline">\(\theta^{*}\)</span>以达到损失函数最小的期望；在GDBT算法中拓展到函数空间是如何优化的呢？</p>
+<p> 浓缩一下：一个变，一个不变！</p>
+<ul>
+<li><p>一个变：基CART回归树的拟合目标<span class="math inline">\(y^*\)</span>是在变的，它是上个CART回归树的负梯度(残差)。</p></li>
+<li><p>一个不变： 每个样本的ground truth是不变的。</p></li>
+</ul>
+<blockquote>
+<hr>
+<p><strong>GDBT算法</strong>：</p>
+<p> 输入：<span class="math inline">\((x_i,y_i)_{i=1}^{i=N}\)</span>，迭代次数M，损失函数$$</p>
+<p> 输出：<span class="math inline">\(F(x)=\sum_{j=1}^{j=M}f_j(x)\)</span></p>
+<p> 1. 学习第一棵树得到残差： <span class="math display">\[
+r_{mi}=-\left[\frac{\partial L\left(y,f\left(x_i\right)\right)}{\partial f\left(x_i\right)}\right]_{f\left(x\right)=f_{m-1}\left(x\right)}
+\]</span>   注：初始化第一棵树的负梯度方向（后面的要拟合的<span class="math inline">\(y_i\)</span>）</p>
+<p> 2. for m =2:M do:</p>
+<p>  2.1 拟合上一棵树棵树的残差，计算输出响应<span class="math inline">\(y_{mi}\)</span>:<span class="math inline">\(y_{i}=[\frac {\partial \ell(y_i,F(x_{i}))}{\partial {F(x_{i})}}]_{F_(x)=F_{m-1}(x)}\)</span></p>
+<p>  2.2 学习第m棵树： <span class="math inline">\(\gamma^*=\arg\min_{w} \sum_{x_i \in R_m}^{}\ell (y_i,F_{m-1}(x_i)+\gamma)\)</span>,即利用线性搜索(line search)估计叶结点区域的值，使损失函数极小化 。</p>
+<p>  2.3 更新树： <span class="math display">\[
+F_m\left(x\right)=F_{m-1}\left(x\right)+\sum_{j=1}^{J}{\gamma{mj}I\left(x\in R_{mj}\right)},其中J是叶节点
+\]</span>  3. 训练结束，输出： <span class="math display">\[
+\hat{F}\left(x\right)=F_M\left(x\right)=\sum_{m=1}^M{\sum_{j=1}^J{\gamma_{mj}I\left(x\in R_{mj}\right)}}
+\]</span> ——</p>
+</blockquote>
+<h2 id="参考">参考：</h2>
+<ol type="1">
+<li>周志华,《机器学习》</li>
+<li>jerome H.Friedman,Greedy Function Approximation：A Gradient  Boosting Machine</li>
+<li>陈天奇，<a href="http://www.52cs.org/?p=429" target="_blank" rel="noopener">XGBoost 与 Boosted Tree</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/GDBT/" rel="tag"># GDBT</a>
+          
+            <a href="/tags/Adaboost/" rel="tag"># Adaboost</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/28/浅析决策树/" rel="next" title="浅析决策树">
+                <i class="fa fa-chevron-left"></i> 浅析决策树
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/08/卷积神经网络(上)/" rel="prev" title="卷积神经网络（上）">
+                卷积神经网络（上） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">会旋转的霸东</p>
+              <p class="site-description motion-element" itemprop="description">写个博客，做做总结</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/XuDongHecs" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#机器学习中的误差偏差与方差"><span class="nav-number">1.</span> <span class="nav-text">机器学习中的误差，偏差与方差</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#boosting算法"><span class="nav-number">2.</span> <span class="nav-text">Boosting算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#adaboost"><span class="nav-number">2.1.</span> <span class="nav-text">Adaboost</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#adaboost算法描述"><span class="nav-number">2.1.0.1.</span> <span class="nav-text">Adaboost算法描述：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gdbt"><span class="nav-number">2.2.</span> <span class="nav-text">GDBT</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">会旋转的霸东</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://yoursite.com/2018/08/02/深入boosting经典算法/';
+          this.page.identifier = '2018/08/02/深入boosting经典算法/';
+          this.page.title = '深入boosting经典算法';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="custom_mathjax_source">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>

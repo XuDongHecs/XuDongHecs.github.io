@@ -79,19 +79,19 @@
 
 
 
-<meta name="description" content="python的部分内置函数 介绍：熟悉和掌握python的内置函数，可以在写算法的时候简化代码。经常看大佬代码各种骚操作。自己也来学一学。">
+<meta name="description" content="熟悉和掌握python的内置函数，可以在写算法的时候简化代码。">
 <meta name="keywords" content="list,yield,map,zip,lambda">
 <meta property="og:type" content="article">
 <meta property="og:title" content="python常用的内置函数">
 <meta property="og:url" content="http://yoursite.com/2018/07/27/python常用的内置函数/index.html">
 <meta property="og:site_name" content="何先生的Blog">
-<meta property="og:description" content="python的部分内置函数 介绍：熟悉和掌握python的内置函数，可以在写算法的时候简化代码。经常看大佬代码各种骚操作。自己也来学一学。">
+<meta property="og:description" content="熟悉和掌握python的内置函数，可以在写算法的时候简化代码。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/images/iterators-generators-iterables.png">
-<meta property="og:updated_time" content="2018-07-27T13:40:25.834Z">
+<meta property="og:updated_time" content="2018-08-24T18:51:59.488Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="python常用的内置函数">
-<meta name="twitter:description" content="python的部分内置函数 介绍：熟悉和掌握python的内置函数，可以在写算法的时候简化代码。经常看大佬代码各种骚操作。自己也来学一学。">
+<meta name="twitter:description" content="熟悉和掌握python的内置函数，可以在写算法的时候简化代码。">
 <meta name="twitter:image" content="http://yoursite.com/images/iterators-generators-iterables.png">
 
 
@@ -378,14 +378,13 @@
       
 
       
-        <h1 id="python的部分内置函数">python的部分内置函数</h1>
-<p>介绍：熟悉和掌握python的内置函数，可以在写算法的时候简化代码。经常看大佬代码各种骚操作。自己也来学一学。</p>
+        <p>  熟悉和掌握python的内置函数，可以在写算法的时候简化代码。</p>
 <a id="more"></a>
 <h2 id="关键字">关键字</h2>
 <p><strong>lambda表达式 :不定义函数名，使用一次的函数</strong></p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = [(<span class="number">1</span>, <span class="number">2</span>), (<span class="number">4</span>, <span class="number">1</span>), (<span class="number">9</span>, <span class="number">10</span>), (<span class="number">13</span>, <span class="number">-3</span>)]<span class="comment">#type :list</span></span><br><span class="line">	a.sort(key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>])<span class="comment">#key的用法很高端，规则排序</span></span><br><span class="line">	print(a)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>[(<span class="number">13</span>, <span class="number">-3</span>), (<span class="number">4</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">9</span>, <span class="number">10</span>)]</span><br></pre></td></tr></table></figure>
 <p><strong>yield函数:可构建生成器，对可迭代对象进行逐次返回，节约计算资源，如keras的 imagegenerator</strong></p>
-<p>​ 1. 可迭代对象<code>iterable</code>是实现了<code>__iter__()</code>方法的对象，<code>iter()</code>方法返回<code>iterator</code>对象，通过<code>next</code>显示的获取元素,用完一个删一个，当迭代器为空时会抛出异常（StopIteration）（和c++迭代器 （<code>pop_front</code>+<code>iterator++</code>）理解类似），调用迭代器<code>for item in iterator:</code>。</p>
+<pre><code>1. 可迭代对象`iterable`是实现了`__iter__()`方法的对象，`iter()`方法返回`iterator`对象，通过`next`显示的获取元素,用完一个删一个，当迭代器为空时会抛出异常（StopIteration）（和c++迭代器 （`pop_front`+`iterator++`）理解类似），调用迭代器`for item in iterator:`。</code></pre>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#如list是一个可迭代对象包含__iter__()方法，使用iter(list)变成迭代器iterator</span></span><br><span class="line">&gt;&gt;&gt;dir(list)</span><br><span class="line">[<span class="string">'__add__'</span>, <span class="string">'__class__'</span>, <span class="string">'__contains__'</span>, <span class="string">'__delattr__'</span>, <span class="string">'__delitem__'</span>, <span class="string">'__dir__'</span>, <span class="string">'__doc__'</span>, <span class="string">'__eq__'</span>, <span class="string">'__format__'</span>, <span class="string">'__ge__'</span>, <span class="string">'__getattribute__'</span>, <span class="string">'__getitem__'</span>, <span class="string">'__gt__'</span>, <span class="string">'__hash__'</span>, <span class="string">'__iadd__'</span>, <span class="string">'__imul__'</span>, <span class="string">'__init__'</span>, <span class="string">'__init_subclass__'</span>, <span class="string">'__iter__'</span>, <span class="string">'__le__'</span>, <span class="string">'__len__'</span>, <span class="string">'__lt__'</span>, <span class="string">'__mul__'</span>, <span class="string">'__ne__'</span>, <span class="string">'__new__'</span>, <span class="string">'__reduce__'</span>, <span class="string">'__reduce_ex__'</span>, <span class="string">'__repr__'</span>, <span class="string">'__reversed__'</span>, <span class="string">'__rmul__'</span>, <span class="string">'__setattr__'</span>, <span class="string">'__setitem__'</span>, <span class="string">'__sizeof__'</span>, <span class="string">'__str__'</span>, <span class="string">'__subclasshook__'</span>, <span class="string">'append'</span>, <span class="string">'clear'</span>, <span class="string">'copy'</span>, <span class="string">'count'</span>, <span class="string">'extend'</span>, <span class="string">'index'</span>, <span class="string">'insert'</span>, <span class="string">'pop'</span>, <span class="string">'remove'</span>, <span class="string">'reverse'</span>, <span class="string">'sort'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>type(a)</span><br><span class="line">list</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>type(iter(a))</span><br><span class="line">list_iterator</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>b = iter(a)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(b)</span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>len(b)</span><br><span class="line"><span class="number">4</span></span><br><span class="line"><span class="comment">#调用迭代器for item in iterator:...</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> item <span class="keyword">in</span> b:</span><br><span class="line">    	<span class="keyword">print</span> (item)</span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line"><span class="number">4</span></span><br><span class="line"><span class="number">5</span></span><br></pre></td></tr></table></figure>
 <ol start="2" type="1">
 <li><p>生成器<code>generator</code>就是带<code>yield</code>的函数，<code>generator</code>就是一种迭代器。<code>yield</code>相当于在迭代器迭代的时候加了个断点返回元素不终止执行，遇到下一个next()触发一次执行。</p></li>
@@ -621,7 +620,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">24</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -664,7 +663,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#python的部分内置函数"><span class="nav-number">1.</span> <span class="nav-text">python的部分内置函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#关键字"><span class="nav-number">1.1.</span> <span class="nav-text">关键字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类型转换"><span class="nav-number">1.2.</span> <span class="nav-text">类型转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#序列操作"><span class="nav-number">1.3.</span> <span class="nav-text">序列操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象操作"><span class="nav-number">1.4.</span> <span class="nav-text">对象操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#变量操作"><span class="nav-number">1.5.</span> <span class="nav-text">变量操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#交互操作"><span class="nav-number">1.6.</span> <span class="nav-text">交互操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件操作"><span class="nav-number">1.7.</span> <span class="nav-text">文件操作</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#关键字"><span class="nav-number">1.</span> <span class="nav-text">关键字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类型转换"><span class="nav-number">2.</span> <span class="nav-text">类型转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#序列操作"><span class="nav-number">3.</span> <span class="nav-text">序列操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象操作"><span class="nav-number">4.</span> <span class="nav-text">对象操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#变量操作"><span class="nav-number">5.</span> <span class="nav-text">变量操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#交互操作"><span class="nav-number">6.</span> <span class="nav-text">交互操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件操作"><span class="nav-number">7.</span> <span class="nav-text">文件操作</span></a></li></ol></div>
             
 
           </div>

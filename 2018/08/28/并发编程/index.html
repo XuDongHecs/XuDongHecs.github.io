@@ -79,19 +79,19 @@
 
 
 
-<meta name="description" content="首先感谢况老师的指导和潇哥的指点。以下内容来自初学的我，谨防入坑！   促使我对并发/并行操作的关注是我对python同步多线程和异步多线程的理解空白，导致我2个月前的一次失败的同步多线程操作直到昨天改keras的imge处理底层代码时发现还有异步多线程实现的并发操作。在此记录下并发操作相关概念和理解。   理解python的并发操作需要掌握python的全局解释器锁(GIL)以及多进程、多线">
+<meta name="description" content="首先感谢况老师的指导和潇哥的指点。以下内容来自初学的我，谨防入坑！   促使我对并发/并行操作的关注是我对python同步多线程和异步多线程的理解空白，导致我2个月前的一次失败的同步多线程操作直到昨天改keras的imge处理底层代码时发现还有异步多线程实现的并发操作。在此记录下并发操作相关概念和理解。   理解python的并发操作需要掌握python的全局解释器锁(GIL)以及多进程、">
 <meta name="keywords" content="多进程,多线程,协程,并行操纵,同步和异步,全局解释器锁">
 <meta property="og:type" content="article">
 <meta property="og:title" content="并发编程">
 <meta property="og:url" content="http://yoursite.com/2018/08/28/并发编程/index.html">
 <meta property="og:site_name" content="何先生的Blog">
-<meta property="og:description" content="首先感谢况老师的指导和潇哥的指点。以下内容来自初学的我，谨防入坑！   促使我对并发/并行操作的关注是我对python同步多线程和异步多线程的理解空白，导致我2个月前的一次失败的同步多线程操作直到昨天改keras的imge处理底层代码时发现还有异步多线程实现的并发操作。在此记录下并发操作相关概念和理解。   理解python的并发操作需要掌握python的全局解释器锁(GIL)以及多进程、多线">
+<meta property="og:description" content="首先感谢况老师的指导和潇哥的指点。以下内容来自初学的我，谨防入坑！   促使我对并发/并行操作的关注是我对python同步多线程和异步多线程的理解空白，导致我2个月前的一次失败的同步多线程操作直到昨天改keras的imge处理底层代码时发现还有异步多线程实现的并发操作。在此记录下并发操作相关概念和理解。   理解python的并发操作需要掌握python的全局解释器锁(GIL)以及多进程、">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/images/生产者消费者.png">
-<meta property="og:updated_time" content="2018-09-06T20:09:32.013Z">
+<meta property="og:updated_time" content="2018-09-06T20:11:41.778Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="并发编程">
-<meta name="twitter:description" content="首先感谢况老师的指导和潇哥的指点。以下内容来自初学的我，谨防入坑！   促使我对并发/并行操作的关注是我对python同步多线程和异步多线程的理解空白，导致我2个月前的一次失败的同步多线程操作直到昨天改keras的imge处理底层代码时发现还有异步多线程实现的并发操作。在此记录下并发操作相关概念和理解。   理解python的并发操作需要掌握python的全局解释器锁(GIL)以及多进程、多线">
+<meta name="twitter:description" content="首先感谢况老师的指导和潇哥的指点。以下内容来自初学的我，谨防入坑！   促使我对并发/并行操作的关注是我对python同步多线程和异步多线程的理解空白，导致我2个月前的一次失败的同步多线程操作直到昨天改keras的imge处理底层代码时发现还有异步多线程实现的并发操作。在此记录下并发操作相关概念和理解。   理解python的并发操作需要掌握python的全局解释器锁(GIL)以及多进程、">
 <meta name="twitter:image" content="http://yoursite.com/images/生产者消费者.png">
 
 
@@ -422,7 +422,9 @@
       
 
       
-        <p>  首先感谢况老师的指导和潇哥的指点。以下内容来自初学的我，谨防入坑！   促使我对并发/并行操作的关注是我对python同步多线程和异步多线程的理解空白，导致我2个月前的一次失败的同步多线程操作直到昨天改keras的imge处理底层代码时发现还有异步多线程实现的并发操作。在此记录下并发操作相关概念和理解。   理解python的并发操作需要掌握python的全局解释器锁(GIL)以及多进程、多线程操作和协程操作。相关概念的区别如阻塞和非阻塞、并发和并行、同步和异步、计算操作密集和I/O密集的概念和区分。本文重点区分上述概念。 <a id="more"></a></p>
+        <p>  首先感谢况老师的指导和潇哥的指点。以下内容来自初学的我，谨防入坑！</p>
+<p>  促使我对并发/并行操作的关注是我对python同步多线程和异步多线程的理解空白，导致我2个月前的一次失败的同步多线程操作直到昨天改keras的imge处理底层代码时发现还有异步多线程实现的并发操作。在此记录下并发操作相关概念和理解。</p>
+<p>  理解python的并发操作需要掌握python的全局解释器锁(GIL)以及多进程、多线程操作和协程操作。相关概念的区别如阻塞和非阻塞、并发和并行、同步和异步、计算操作密集和I/O密集的概念和区分。本文重点区分上述概念。 <a id="more"></a></p>
 <h2 id="python为什么比cjava慢">python为什么比C++/Java慢</h2>
 <p>  首先C++和Java是编译型语言，而Python则是一种解释型语言。编译型语言在程序执行前需要一个专门编译额过程，将代码编译成机器语言；而python是解释型语言不需要编译，在程序执行时将代码一步步翻译成机器语言。python的变量类型是动态的，解释器会根据程序将变量和所有的变量类型存放在内存中；而静态类型直接将变量与其类型绑定。形象的理解是python解释器制定规则，python执行代码时去匹配这个规则，然后再执行。</p>
 <h2 id="全局解释器锁gil">全局解释器锁(GIL)</h2>

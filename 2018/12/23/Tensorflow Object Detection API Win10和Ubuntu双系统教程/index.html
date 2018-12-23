@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Faster RCNN,Tensorflow,COCO," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本实验的Faster RCNN 源代码实现来自tensorflow/models 的 object_detection API ；在COCO2014数据集上完成训练和测试，本教程由我、胡保林大神以及韩博士在win10和Ubuntu16.04上完成并测试通过。">
+<meta name="keywords" content="Faster RCNN,Tensorflow,COCO">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tensorflow Object Detection API Win10和Ubuntu双系统教程">
+<meta property="og:url" content="http://yoursite.com/2018/12/23/Tensorflow Object Detection API Win10和Ubuntu双系统教程/index.html">
+<meta property="og:site_name" content="何先生的Blog">
+<meta property="og:description" content="本实验的Faster RCNN 源代码实现来自tensorflow/models 的 object_detection API ；在COCO2014数据集上完成训练和测试，本教程由我、胡保林大神以及韩博士在win10和Ubuntu16.04上完成并测试通过。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/env_test.png">
+<meta property="og:image" content="http://yoursite.com/images/create_tfrcord.png">
+<meta property="og:image" content="http://yoursite.com/images/train_process.png">
+<meta property="og:image" content="http://yoursite.com/images/eval_result.png">
+<meta property="og:updated_time" content="2018-12-23T09:20:50.300Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Tensorflow Object Detection API Win10和Ubuntu双系统教程">
+<meta name="twitter:description" content="本实验的Faster RCNN 源代码实现来自tensorflow/models 的 object_detection API ；在COCO2014数据集上完成训练和测试，本教程由我、胡保林大神以及韩博士在win10和Ubuntu16.04上完成并测试通过。">
+<meta name="twitter:image" content="http://yoursite.com/images/env_test.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/12/23/Tensorflow Object Detection API Win10和Ubuntu双系统教程/"/>
+
+
+
+
+
+  <title>Tensorflow Object Detection API Win10和Ubuntu双系统教程 | 何先生的Blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ee745d05c094ff5e173cd1223073f1ef";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">何先生的Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">该搬的砖一块都少不了，Come on!</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            站点地图
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-baidusitemap">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            baidusitemap
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/23/Tensorflow Object Detection API Win10和Ubuntu双系统教程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="会旋转的霸东">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="何先生的Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Tensorflow Object Detection API Win10和Ubuntu双系统教程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-23T16:47:18+08:00">
+                2018-12-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Object-Detection/" itemprop="url" rel="index">
+                    <span itemprop="name">Object Detection</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/12/23/Tensorflow Object Detection API Win10和Ubuntu双系统教程/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/12/23/Tensorflow Object Detection API Win10和Ubuntu双系统教程/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本实验的Faster RCNN 源代码实现来自<a href="https://github.com/tensorflow/models/tree/master/research/object_detection" target="_blank" rel="noopener">tensorflow/models 的 object_detection API</a> ；在COCO2014数据集上完成训练和测试，本教程由我、胡保林大神以及韩博士在win10和Ubuntu16.04上完成并测试通过。</p>
+<a id="more"></a>
+<h3 id="环境和依赖准备">1. 环境和依赖准备</h3>
+<ul>
+<li><p>Tensorflow Object Detection API 根据官方安装指示安装<a href="https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/installation.md" target="_blank" rel="noopener">下载安装</a>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">最后的测试代码： python object_detection/builders/model_builder_test.py</span><br><span class="line">如果返回下图结果，表示上述API安装成功、</span><br><span class="line">如果安装失败，看代码报错debug.</span><br><span class="line">注意：将 object_detection 和 slim 配置到环境变量中，否则会出现 没有这俩个模块的报错</span><br><span class="line">win10:</span><br><span class="line">	可以在上述俩个文件夹下运行： python setup.py install</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/images/env_test.png" alt="完整环境配置完成测试结果"><figcaption>完整环境配置完成测试结果</figcaption>
+</figure></li>
+<li><p>下载 <a href="http://cocodataset.org/#download" target="_blank" rel="noopener">COCO2014数据集</a>. 保持下列数据存储:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">COCO/DIR/</span><br><span class="line">  annotations/</span><br><span class="line">    instances_train2014.json</span><br><span class="line">    instances_val2014.json</span><br><span class="line">  train2014/</span><br><span class="line">    COCO_train2014_*.jpg</span><br><span class="line">  val2014/</span><br><span class="line">    COCO_val2014_*.jpg</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="object-detection-api部分代码用法">2. Object Detection API部分代码用法</h3>
+<h5 id="创建coco或者voc格式的tfrecord文件">1. 创建COCO或者VOC格式的TFRecord文件</h5>
+<p>  object detection/dataset_tools中包含创建TFRecord的python程序。以创建COCO2014为例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">python object detection/dataset_tools/create_coco_tf_record.py --logtostderr \</span><br><span class="line">	  --train_image_dir=<span class="string">"E:\TEMP_PROJECTS\\COCO\\train2014\\"</span> \</span><br><span class="line">      --val_image_dir=<span class="string">"E:\TEMP_PROJECTS\\COCO\\val2014\\"</span> \</span><br><span class="line">      -- train_annotations_file= 			                 <span class="string">"E:\TEMP_PROJECTS\COCO\\annotations/instances_train2014.json"</span>\</span><br><span class="line">      --val_annotations_file=<span class="string">"E:\TEMP_PROJECTS\COCO\\annotations/instances_val2014.json"</span> \</span><br><span class="line">      --output_dir=<span class="string">"../data/coco"</span></span><br><span class="line">    PS:如果不转换测试数据，请在create_coco_tf_record.py中检测<span class="keyword">assert</span>函数将test_file相关代码注释掉</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/images/create_tfrcord.png" alt="create_tfrcord"><figcaption>create_tfrcord</figcaption>
+</figure>
+<h4 id="训练faster-rcnn-nasnet">2.训练Faster RCNN Nasnet</h4>
+<ul>
+<li>下载预训练模型和修改config文件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1. 类别，迭代数，预训练模型路径，tfrecord的路径。（注意：如果只有11G显存，请把config中图像尺寸改成600*600以下）</span><br><span class="line">2. 针对自己数据集修改 类别个数--num_classes</span><br><span class="line">3. samples/configs/faster_rcnn_nas_coco.config文件里面PATH_TO_BE_CONFIGURED 共有5处应替换成对应文件：比如训练集路径，label_map路径，模型权重路径等，详见config文件</span><br><span class="line">4. fine_tune_checkpoint：设置预训练模型权重路径。</span><br><span class="line">5. num_steps 根据实际情况修改</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>输入训练命令（根目录：research文件夹）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">python object_detection/legacy/train.py  --logtostderr \</span><br><span class="line">        --train_dir=object_detection/data/coco/ \</span><br><span class="line">        --pipeline_config_path=object_detection/samples/configs/faster_rcnn_nas_coco.config</span><br><span class="line">        <span class="comment">#train_dir---训练数据路径</span></span><br><span class="line">        <span class="comment">#pipeline_config_path---config 路径</span></span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/images/train_process.png" alt="训练过程截图"><figcaption>训练过程截图</figcaption>
+</figure></li>
+<li><p>模型评估（根目录同上）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">注意：</span><br><span class="line"><span class="number">1.</span> legacy/evaluator.py 第<span class="number">58</span>行改为 ：EVAL_DEFAULT_METRIC = <span class="string">'coco_detection_metrics'</span></span><br><span class="line"><span class="number">2.</span> utils/object_detection_evaluation.py 如果用python3的话将 unicode 改成str</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">python object_detection/legacy/eval.py </span><br><span class="line">        --logtostderr </span><br><span class="line">        --checkpoint_dir=object_detection/faster_rcnn_nas_coco_2018_01_28 </span><br><span class="line">        --eval_dir=object_detection/data/coco/ </span><br><span class="line">        --pipeline_config_path=object_detection/samples/configs/faster_rcnn_nas_coco.config </span><br><span class="line">        --run_once True</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/images/eval_result.png" alt="测试结果–简略版"><figcaption>测试结果–简略版</figcaption>
+</figure></li>
+</ul>
+<h3 id="在voc上微调">3. 在VOC上微调</h3>
+<ol type="1">
+<li>构建VOC TFRcord格式数据</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">python object_detection/dataset_tools/create_pascal_tf_record.py \</span><br><span class="line">        --data_dir=/mnt/fpan/HBL_data/data_set/VOCdevkit \</span><br><span class="line">        --year=VOC2007 \</span><br><span class="line">        --output_path=object_detection/data/voc/train2007.record   <span class="comment">#是文件名</span></span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li><p>重新写一个object_detection/samples/configs/faster_rcnn_nas_voc.config 文件</p>
+<p>在 fine_tune_checkpoint：设置为COCO训练好的模型权重路径。</p>
+<p>测试方法同上</p></li>
+</ol>
+<h3 id="faster-rcnn-nasnet-demo">4. Faster RCNN Nasnet demo</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">见object_detection_tutorial.py 该文件需要在object detection目录下或者你把里面的路径设置正确</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># coding: utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># # Object Detection Demo</span></span><br><span class="line"><span class="comment"># Welcome to the object detection inference walkthrough!  This notebook will walk you step by step through the process of using a pre-trained model to detect objects in an image. Make sure to follow the [installation instructions](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/installation.md) before you start.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> six.moves.urllib <span class="keyword">as</span> urllib</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> tarfile</span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> zipfile</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> distutils.version <span class="keyword">import</span> StrictVersion</span><br><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</span><br><span class="line"><span class="keyword">from</span> io <span class="keyword">import</span> StringIO</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"></span><br><span class="line"><span class="comment"># This is needed since the notebook is stored in the object_detection folder.</span></span><br><span class="line">sys.path.append(<span class="string">".."</span>)</span><br><span class="line"><span class="keyword">from</span> object_detection.utils <span class="keyword">import</span> ops <span class="keyword">as</span> utils_ops</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> StrictVersion(tf.__version__) &lt; StrictVersion(<span class="string">'1.9.0'</span>):</span><br><span class="line">  <span class="keyword">raise</span> ImportError(<span class="string">'Please upgrade your TensorFlow installation to v1.9.* or later!'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># ## Env setup</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># This is needed to display the images.</span></span><br><span class="line"><span class="comment">#get_ipython().magic('matplotlib inline')</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># ## Object detection imports</span></span><br><span class="line"><span class="comment"># Here are the imports from the object detection module.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> utils <span class="keyword">import</span> label_map_util</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> utils <span class="keyword">import</span> visualization_utils <span class="keyword">as</span> vis_util</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># # Model preparation </span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ## Variables</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># Any model exported using the `export_inference_graph.py` tool can be loaded here simply by changing `PATH_TO_FROZEN_GRAPH` to point to a new .pb file.  </span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># By default we use an "SSD with Mobilenet" model here. See the [detection model zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md) for a list of other models that can be run out-of-the-box with varying speeds and accuracies.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># What model to download.</span></span><br><span class="line">MODEL_NAME = <span class="string">'faster_rcnn_nas_coco_2018_01_28'</span></span><br><span class="line">MODEL_FILE = MODEL_NAME + <span class="string">'.tar.gz'</span></span><br><span class="line">DOWNLOAD_BASE = <span class="string">'http://download.tensorflow.org/models/object_detection/'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Path to frozen detection graph. This is the actual model that is used for the object detection.</span></span><br><span class="line">PATH_TO_FROZEN_GRAPH = MODEL_NAME + <span class="string">'/frozen_inference_graph.pb'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># List of the strings that is used to add correct label for each box.</span></span><br><span class="line">PATH_TO_LABELS = os.path.join(<span class="string">'data'</span>, <span class="string">'mscoco_label_map.pbtxt'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># ## Download Model</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># opener = urllib.request.URLopener()</span></span><br><span class="line"><span class="comment"># opener.retrieve(DOWNLOAD_BASE + MODEL_FILE, MODEL_FILE)</span></span><br><span class="line"><span class="comment"># tar_file = tarfile.open(MODEL_FILE)</span></span><br><span class="line"><span class="comment"># for file in tar_file.getmembers():</span></span><br><span class="line"><span class="comment">#  file_name = os.path.basename(file.name)</span></span><br><span class="line"><span class="comment">#  if 'frozen_inference_graph.pb' in file_name:</span></span><br><span class="line"><span class="comment">#    tar_file.extract(file, os.getcwd())</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ## Load a (frozen) Tensorflow model into memory.</span></span><br><span class="line"></span><br><span class="line">detection_graph = tf.Graph()</span><br><span class="line"><span class="keyword">with</span> detection_graph.as_default():</span><br><span class="line">  od_graph_def = tf.GraphDef()</span><br><span class="line">  <span class="keyword">with</span> tf.gfile.GFile(PATH_TO_FROZEN_GRAPH, <span class="string">'rb'</span>) <span class="keyword">as</span> fid:</span><br><span class="line">    serialized_graph = fid.read()</span><br><span class="line">    od_graph_def.ParseFromString(serialized_graph)</span><br><span class="line">    tf.import_graph_def(od_graph_def, name=<span class="string">''</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># ## Loading label map</span></span><br><span class="line"><span class="comment"># Label maps map indices to category names, so that when our convolution network predicts `5`, we know that this corresponds to `airplane`.  Here we use internal utility functions, but anything that returns a dictionary mapping integers to appropriate string labels would be fine</span></span><br><span class="line">category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=<span class="keyword">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load_image_into_numpy_array</span><span class="params">(image)</span>:</span></span><br><span class="line">  (im_width, im_height) = image.size</span><br><span class="line">  <span class="keyword">return</span> np.array(image.getdata()).reshape(</span><br><span class="line">      (im_height, im_width, <span class="number">3</span>)).astype(np.uint8)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># # Detection</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># For the sake of simplicity we will use only 2 images:</span></span><br><span class="line"><span class="comment"># image1.jpg</span></span><br><span class="line"><span class="comment"># image2.jpg</span></span><br><span class="line"><span class="comment"># If you want to test the code with your images, just add path to the images to the TEST_IMAGE_PATHS.</span></span><br><span class="line">PATH_TO_TEST_IMAGES_DIR = <span class="string">'test_images'</span></span><br><span class="line">TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, <span class="string">'image&#123;&#125;.jpg'</span>.format(i)) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>, <span class="number">3</span>) ]</span><br><span class="line"></span><br><span class="line"><span class="comment"># Size, in inches, of the output images.</span></span><br><span class="line">IMAGE_SIZE = (<span class="number">12</span>, <span class="number">8</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">run_inference_for_single_image</span><span class="params">(image, graph)</span>:</span></span><br><span class="line">  <span class="keyword">with</span> graph.as_default():</span><br><span class="line">    <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">      <span class="comment"># Get handles to input and output tensors</span></span><br><span class="line">      ops = tf.get_default_graph().get_operations()</span><br><span class="line">      all_tensor_names = &#123;output.name <span class="keyword">for</span> op <span class="keyword">in</span> ops <span class="keyword">for</span> output <span class="keyword">in</span> op.outputs&#125;</span><br><span class="line">      tensor_dict = &#123;&#125;</span><br><span class="line">      <span class="keyword">for</span> key <span class="keyword">in</span> [</span><br><span class="line">          <span class="string">'num_detections'</span>, <span class="string">'detection_boxes'</span>, <span class="string">'detection_scores'</span>,</span><br><span class="line">          <span class="string">'detection_classes'</span>, <span class="string">'detection_masks'</span></span><br><span class="line">      ]:</span><br><span class="line">        tensor_name = key + <span class="string">':0'</span></span><br><span class="line">        <span class="keyword">if</span> tensor_name <span class="keyword">in</span> all_tensor_names:</span><br><span class="line">          tensor_dict[key] = tf.get_default_graph().get_tensor_by_name(</span><br><span class="line">              tensor_name)</span><br><span class="line">      <span class="keyword">if</span> <span class="string">'detection_masks'</span> <span class="keyword">in</span> tensor_dict:</span><br><span class="line">        <span class="comment"># The following processing is only for single image</span></span><br><span class="line">        detection_boxes = tf.squeeze(tensor_dict[<span class="string">'detection_boxes'</span>], [<span class="number">0</span>])</span><br><span class="line">        detection_masks = tf.squeeze(tensor_dict[<span class="string">'detection_masks'</span>], [<span class="number">0</span>])</span><br><span class="line">        <span class="comment"># Reframe is required to translate mask from box coordinates to image coordinates and fit the image size.</span></span><br><span class="line">        real_num_detection = tf.cast(tensor_dict[<span class="string">'num_detections'</span>][<span class="number">0</span>], tf.int32)</span><br><span class="line">        detection_boxes = tf.slice(detection_boxes, [<span class="number">0</span>, <span class="number">0</span>], [real_num_detection, <span class="number">-1</span>])</span><br><span class="line">        detection_masks = tf.slice(detection_masks, [<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>], [real_num_detection, <span class="number">-1</span>, <span class="number">-1</span>])</span><br><span class="line">        detection_masks_reframed = utils_ops.reframe_box_masks_to_image_masks(</span><br><span class="line">            detection_masks, detection_boxes, image.shape[<span class="number">0</span>], image.shape[<span class="number">1</span>])</span><br><span class="line">        detection_masks_reframed = tf.cast(</span><br><span class="line">            tf.greater(detection_masks_reframed, <span class="number">0.5</span>), tf.uint8)</span><br><span class="line">        <span class="comment"># Follow the convention by adding back the batch dimension</span></span><br><span class="line">        tensor_dict[<span class="string">'detection_masks'</span>] = tf.expand_dims(</span><br><span class="line">            detection_masks_reframed, <span class="number">0</span>)</span><br><span class="line">      image_tensor = tf.get_default_graph().get_tensor_by_name(<span class="string">'image_tensor:0'</span>)</span><br><span class="line"></span><br><span class="line">      <span class="comment"># Run inference</span></span><br><span class="line">      output_dict = sess.run(tensor_dict,</span><br><span class="line">                             feed_dict=&#123;image_tensor: np.expand_dims(image, <span class="number">0</span>)&#125;)</span><br><span class="line"></span><br><span class="line">      <span class="comment"># all outputs are float32 numpy arrays, so convert types as appropriate</span></span><br><span class="line">      output_dict[<span class="string">'num_detections'</span>] = int(output_dict[<span class="string">'num_detections'</span>][<span class="number">0</span>])</span><br><span class="line">      output_dict[<span class="string">'detection_classes'</span>] = output_dict[</span><br><span class="line">          <span class="string">'detection_classes'</span>][<span class="number">0</span>].astype(np.uint8)</span><br><span class="line">      output_dict[<span class="string">'detection_boxes'</span>] = output_dict[<span class="string">'detection_boxes'</span>][<span class="number">0</span>]</span><br><span class="line">      output_dict[<span class="string">'detection_scores'</span>] = output_dict[<span class="string">'detection_scores'</span>][<span class="number">0</span>]</span><br><span class="line">      <span class="keyword">if</span> <span class="string">'detection_masks'</span> <span class="keyword">in</span> output_dict:</span><br><span class="line">        output_dict[<span class="string">'detection_masks'</span>] = output_dict[<span class="string">'detection_masks'</span>][<span class="number">0</span>]</span><br><span class="line">  <span class="keyword">return</span> output_dict</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> image_path <span class="keyword">in</span> TEST_IMAGE_PATHS:</span><br><span class="line">  image = Image.open(image_path)</span><br><span class="line">  <span class="comment"># the array based representation of the image will be used later in order to prepare the</span></span><br><span class="line">  <span class="comment"># result image with boxes and labels on it.</span></span><br><span class="line">  image_np = load_image_into_numpy_array(image)</span><br><span class="line">  <span class="comment"># Expand dimensions since the model expects images to have shape: [1, None, None, 3]</span></span><br><span class="line">  image_np_expanded = np.expand_dims(image_np, axis=<span class="number">0</span>)</span><br><span class="line">  <span class="comment"># Actual detection.</span></span><br><span class="line">  output_dict = run_inference_for_single_image(image_np, detection_graph)</span><br><span class="line">  <span class="comment"># Visualization of the results of a detection.</span></span><br><span class="line">  vis_util.visualize_boxes_and_labels_on_image_array(</span><br><span class="line">      image_np,</span><br><span class="line">      output_dict[<span class="string">'detection_boxes'</span>],</span><br><span class="line">      output_dict[<span class="string">'detection_classes'</span>],</span><br><span class="line">      output_dict[<span class="string">'detection_scores'</span>],</span><br><span class="line">      category_index,</span><br><span class="line">      instance_masks=output_dict.get(<span class="string">'detection_masks'</span>),</span><br><span class="line">      use_normalized_coordinates=<span class="keyword">True</span>,</span><br><span class="line">      line_thickness=<span class="number">8</span>)</span><br><span class="line">  plt.figure(figsize=IMAGE_SIZE)</span><br><span class="line">  plt.imshow(image_np)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Faster-RCNN/" rel="tag"># Faster RCNN</a>
+          
+            <a href="/tags/Tensorflow/" rel="tag"># Tensorflow</a>
+          
+            <a href="/tags/COCO/" rel="tag"># COCO</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/28/并发编程/" rel="next" title="并发编程">
+                <i class="fa fa-chevron-left"></i> 并发编程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">会旋转的霸东</p>
+              <p class="site-description motion-element" itemprop="description">写个博客，做做总结</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">33</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/XuDongHecs" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#环境和依赖准备"><span class="nav-number">1.</span> <span class="nav-text">1. 环境和依赖准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#object-detection-api部分代码用法"><span class="nav-number">2.</span> <span class="nav-text">2. Object Detection API部分代码用法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建coco或者voc格式的tfrecord文件"><span class="nav-number">2.0.1.</span> <span class="nav-text">1. 创建COCO或者VOC格式的TFRecord文件</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#训练faster-rcnn-nasnet"><span class="nav-number">2.1.</span> <span class="nav-text">2.训练Faster RCNN Nasnet</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在voc上微调"><span class="nav-number">3.</span> <span class="nav-text">3. 在VOC上微调</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#faster-rcnn-nasnet-demo"><span class="nav-number">4.</span> <span class="nav-text">4. Faster RCNN Nasnet demo</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">会旋转的霸东</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://会旋转的霸东.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://yoursite.com/2018/12/23/Tensorflow Object Detection API Win10和Ubuntu双系统教程/';
+          this.page.identifier = '2018/12/23/Tensorflow Object Detection API Win10和Ubuntu双系统教程/';
+          this.page.title = 'Tensorflow Object Detection API Win10和Ubuntu双系统教程';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://会旋转的霸东.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === '') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="custom_mathjax_source">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>

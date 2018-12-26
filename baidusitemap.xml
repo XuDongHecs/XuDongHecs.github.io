@@ -4,6 +4,60 @@
 
     
   <url>
+    <loc>http://yoursite.com/2018/12/25/keras%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA/</loc>
+    <lastmod>2018-12-26T14:53:49.547Z</lastmod>
+    <data>
+        <display>
+        <title>Keras数据增强</title>
+        <pubTime>2018-12-25T07:50:10.000Z</pubTime>
+        
+        <tag>keras-20mins</tag>
+         
+        <tag>keras自定义生成器</tag>
+         
+        <tag>keras-数据增强</tag>
+         
+         
+           
+             
+              <breadCrumb title="Keras" url="http://yoursite.com/categories/Keras/"/>
+          
+             
+              <breadCrumb title="深度学习框架" url="http://yoursite.com/categories/Keras/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://yoursite.com/2018/12/26/keras%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0/</loc>
+    <lastmod>2018-12-26T14:51:54.456Z</lastmod>
+    <data>
+        <display>
+        <title>keras回调函数</title>
+        <pubTime>2018-12-26T13:08:47.000Z</pubTime>
+        
+        <tag>keras-20mins</tag>
+         
+        <tag>keras-回调函数</tag>
+         
+        <tag>keras-tensorboard</tag>
+         
+         
+           
+             
+              <breadCrumb title="Keras" url="http://yoursite.com/categories/Keras/"/>
+          
+             
+              <breadCrumb title="深度学习框架" url="http://yoursite.com/categories/Keras/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://yoursite.com/2018/12/23/keras%E7%AE%80%E6%98%8E%E6%95%99%E7%A8%8B/</loc>
     <lastmod>2018-12-24T12:09:58.000Z</lastmod>
     <data>

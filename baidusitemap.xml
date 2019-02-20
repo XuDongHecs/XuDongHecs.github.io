@@ -4,8 +4,37 @@
 
     
   <url>
+    <loc>http://yoursite.com/2019/02/20/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95%E7%9A%84%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0/</loc>
+    <lastmod>2019-02-20T15:42:18.335Z</lastmod>
+    <data>
+        <display>
+        <title>目标检测算法的损失函数</title>
+        <pubTime>2019-02-20T15:25:48.156Z</pubTime>
+        
+        <tag>SSE</tag>
+         
+        <tag>Smooth L1</tag>
+         
+        <tag>Softmax loss</tag>
+         
+        <tag>Focal loss</tag>
+         
+         
+           
+             
+              <breadCrumb title="目标检测" url="http://yoursite.com/categories/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/"/>
+          
+             
+              <breadCrumb title="损失函数" url="http://yoursite.com/categories/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://yoursite.com/2018/12/25/keras%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA/</loc>
-    <lastmod>2018-12-26T14:53:49.547Z</lastmod>
+    <lastmod>2018-12-26T14:57:23.481Z</lastmod>
     <data>
         <display>
         <title>Keras数据增强</title>
